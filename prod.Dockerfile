@@ -1,23 +1,21 @@
-FROM golang:1.24.5-bookworm
+FROM golang:1.24-bookworm AS builder
 
-ARG UID=1000
-ARG GID=1000
+COPY ./go.mod ./go.sum ./
+RUN go mod download
 
+# ソースコードをコピー
+COPY . .
 
-# 非特権ユーザの設定
-RUN (getent passwd ${UID} && /usr/sbin/userdel -r $(getent passwd ${UID} | cut -d: -f1) || true) && \
-  (getent group ${GID} || groupadd -g ${GID} nonroot) && \
-  /usr/sbin/useradd -u ${UID} -g ${GID} -m -s /bin/bash nonroot
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o /go/bin/portfolio-v2025-api .
 
-RUN go install github.com/air-verse/air@latest
+FROM scratch
 
-# Go module cache用のディレクトリを作成し、nonrootユーザに権限を付与
-RUN mkdir -p /go/pkg/mod/cache && \
-  chown -R ${UID}:${GID} /go/pkg/mod
+# バイナリを配置
+COPY --from=builder /go/bin/portfolio-v2025-api /go-bin/portfolio-v2025-api
 
-USER nonroot
-WORKDIR /api
+# 非特権ユーザで実行
+USER 10000
 
-EXPOSE 8080
+EXPOSE 80
 
-CMD ["air"]
+CMD ["/go-bin/portfolio-v2025-api"]
