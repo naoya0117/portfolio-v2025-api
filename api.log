@@ -1,0 +1,17 @@
+2025/07/22 02:56:32 No database configuration found. Running with mock data.
+2025/07/22 02:56:32 connect to http://localhost:8080/ for GraphQL playground
+[SERVER] POST /login from [::1]:57626
+[ROUTER] Login handler called: POST /login
+[AUTH] Login request from: [::1]:57626
+[AUTH] Request method: POST
+[AUTH] Login attempt for username: admin
+[AUTH] Expected username: 'admin'
+[AUTH] Expected password set: true
+[AUTH] Authentication successful for user: admin
+[AUTH] Token generated successfully
+[AUTH] Response JSON: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzUzMjA3MDA1fQ.UHFtBxFxIXMJxbO6xnsHF_Zwx0Igj45Q2UQMbkqqxu0"}
+[SERVER] POST /query from [::1]:57675
+[AUTH] Middleware called for path: /query
+[SERVER] POST /query from [::1]:58086
+[AUTH] Middleware called for path: /query
+signal: terminated

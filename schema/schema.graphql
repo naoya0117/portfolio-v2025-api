@@ -1,0 +1,288 @@
+type Query {
+  # Profile queries
+  profile: Profile
+  
+  # Skill queries
+  skills: [Skill!]!
+  skillsByCategory: [SkillCategory!]!
+  
+  # Experience queries  
+  experiences: [Experience!]!
+  
+  # Monologue queries
+  monologue(id: ID!): Monologue
+  monologues(
+    limit: Int
+    offset: Int
+    categoryId: String
+    tags: [String!]
+    difficulty: Difficulty
+  ): MonologuesResponse!
+  
+  # BlogPost queries
+  blogPost(slug: String!): BlogPost
+  blogPosts: [BlogPost!]!
+  
+  # Admin queries (requires authentication)
+  adminBlogPosts: [BlogPost!]!
+  adminMonologues: [Monologue!]!
+  
+  # CodeCategory queries
+  codeCategories: [CodeCategory!]!
+  codeCategoriesHierarchy: [CodeCategory!]!
+  
+  # Related content
+  relatedContent(monologueId: ID!, limit: Int = 6): [RelatedContent!]!
+}
+
+type Mutation {
+  # Like functionality
+  likeMonologue(id: ID!): LikeResponse!
+  likeBlogPost(id: ID!): LikeResponse!
+  
+  # URL preview generation
+  generateUrlPreview(url: String!): UrlPreview!
+  
+  # BlogPost CRUD
+  createBlogPost(input: CreateBlogPostInput!): BlogPost!
+  updateBlogPost(id: ID!, input: UpdateBlogPostInput!): BlogPost!
+  deleteBlogPost(id: ID!): Boolean!
+  publishBlogPost(id: ID!): BlogPost!
+  unpublishBlogPost(id: ID!): BlogPost!
+  
+  # CodeCategory CRUD (admin functions)
+  createCodeCategory(input: CreateCodeCategoryInput!): CodeCategory!
+  updateCodeCategory(id: ID!, input: UpdateCodeCategoryInput!): CodeCategory!
+  deleteCodeCategory(id: ID!): Boolean!
+  
+  # Monologue CRUD
+  createMonologue(input: CreateMonologueInput!): Monologue!
+  updateMonologue(id: ID!, input: UpdateMonologueInput!): Monologue!
+  deleteMonologue(id: ID!): Boolean!
+  publishMonologue(id: ID!): Monologue!
+  unpublishMonologue(id: ID!): Monologue!
+}
+
+# Profile types
+type Profile {
+  id: ID!
+  name: String!
+  title: String
+  bio: String
+  avatarUrl: String
+  socialLinks: [SocialLink!]!
+}
+
+type SocialLink {
+  platform: String!
+  url: String!
+  icon: String
+}
+
+# Skill types
+type Skill {
+  id: ID!
+  name: String!
+  category: String!
+  level: Int!
+  iconUrl: String
+  displayOrder: Int!
+}
+
+type SkillCategory {
+  category: String!
+  skills: [Skill!]!
+}
+
+# Experience types
+type Experience {
+  id: ID!
+  company: String!
+  position: String!
+  description: String
+  startDate: String!
+  endDate: String
+  isCurrent: Boolean!
+  technologies: [String!]!
+}
+
+# Monologue types
+type Monologue {
+  id: ID!
+  content: String!
+  contentType: ContentType!
+  codeLanguage: String
+  codeSnippet: String
+  tags: [String!]!
+  isPublished: Boolean!
+  publishedAt: String
+  createdAt: String!
+  updatedAt: String!
+  
+  # Extended fields
+  url: String
+  urlPreview: UrlPreview
+  relatedBlogPosts: [String!]
+  series: String
+  category: String
+  codeCategory: CodeCategory
+  difficulty: Difficulty
+  likeCount: Int
+}
+
+type MonologuesResponse {
+  nodes: [Monologue!]!
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
+type UrlPreview {
+  title: String!
+  description: String
+  imageUrl: String
+  siteName: String
+  url: String!
+  favicon: String
+  createdAt: String!
+}
+
+type CodeCategory {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  parentId: String
+  color: String
+  icon: String
+  children: [CodeCategory!]
+}
+
+# BlogPost types
+type BlogPost {
+  id: ID!
+  title: String!
+  slug: String!
+  excerpt: String
+  content: String!
+  coverImageUrl: String
+  tags: [String!]!
+  status: BlogStatus!
+  seoTitle: String
+  seoDescription: String
+  publishedAt: String
+  likeCount: Int
+  createdAt: String!
+  updatedAt: String!
+}
+
+# Related content types
+type RelatedContent {
+  id: ID!
+  title: String!
+  type: ContentType!
+  excerpt: String
+  tags: [String!]!
+  publishedAt: String!
+  readTime: Int
+}
+
+# Like functionality
+type LikeResponse {
+  id: ID!
+  likeCount: Int!
+  isLiked: Boolean!
+}
+
+# Enums
+enum ContentType {
+  POST
+  CODE
+  IMAGE
+  URL_PREVIEW
+  BLOG
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+# Input types for BlogPost
+input CreateBlogPostInput {
+  title: String!
+  slug: String!
+  excerpt: String
+  content: String!
+  coverImageUrl: String
+  tags: [String!]!
+  status: BlogStatus = DRAFT
+  seoTitle: String
+  seoDescription: String
+}
+
+input UpdateBlogPostInput {
+  title: String
+  slug: String
+  excerpt: String
+  content: String
+  coverImageUrl: String
+  tags: [String!]
+  status: BlogStatus
+  seoTitle: String
+  seoDescription: String
+}
+
+# Input types for Monologue
+input CreateMonologueInput {
+  content: String!
+  contentType: ContentType!
+  codeLanguage: String
+  codeSnippet: String
+  tags: [String!]!
+  isPublished: Boolean = false
+  url: String
+  series: String
+  category: String
+  codeCategoryId: String
+  difficulty: Difficulty
+}
+
+input UpdateMonologueInput {
+  content: String
+  contentType: ContentType
+  codeLanguage: String
+  codeSnippet: String
+  tags: [String!]
+  isPublished: Boolean
+  url: String
+  series: String
+  category: String
+  codeCategoryId: String
+  difficulty: Difficulty
+}
+
+# Input types for CodeCategory
+input CreateCodeCategoryInput {
+  name: String!
+  slug: String!
+  description: String
+  parentId: String
+  color: String
+  icon: String
+}
+
+input UpdateCodeCategoryInput {
+  name: String
+  slug: String
+  description: String
+  parentId: String
+  color: String
+  icon: String
+}

@@ -1,0 +1,26 @@
+# GraphQL schema location
+schema:
+  - "schema/*.graphql"
+
+# Generated Go code location
+exec:
+  filename: internal/generated/generated.go
+  package: generated
+
+# Resolver implementation location
+resolver:
+  filename: internal/resolvers/resolver.go
+  package: resolvers
+  type: Resolver
+
+# Model configuration
+model:
+  filename: internal/models/models_gen.go
+  package: models
+
+# Automatic bind to models in the models package
+autobind:
+  - "github.com/naoya0117/portfolio-v2025-api/internal/models"
+
+# Skip validation of schema
+skip_validation: false
