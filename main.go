@@ -73,11 +73,17 @@ func main() {
 	}).Methods("POST", "OPTIONS")
 	
 	// Public endpoints (no auth required)
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	// Only enable playground in development
+	if os.Getenv("GO_ENV") != "production" {
+		router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	}
 	router.Handle("/query", srv)
 	
 	// Protected admin endpoints
-	router.Handle("/admin", auth.AuthMiddleware(playground.Handler("GraphQL playground (Admin)", "/admin/query")))
+	// Only enable admin playground in development
+	if os.Getenv("GO_ENV") != "production" {
+		router.Handle("/admin", auth.AuthMiddleware(playground.Handler("GraphQL playground (Admin)", "/admin/query")))
+	}
 	router.Handle("/admin/query", auth.AuthMiddleware(srv))
 
 	// Get allowed origins from environment or use defaults
