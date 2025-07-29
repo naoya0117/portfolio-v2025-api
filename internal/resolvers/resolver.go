@@ -9,10 +9,9 @@ import (
 
 	"github.com/naoya0117/portfolio-v2025-api/internal/generated"
 	"github.com/naoya0117/portfolio-v2025-api/internal/models"
-	"github.com/naoya0117/portfolio-v2025-api/internal/database"
 )
 
-type Resolver struct{ DB *database.DB }
+type Resolver struct{}
 
 // BlogPost field resolvers
 func (r *blogPostResolver) CreatedAt(ctx context.Context, obj *models.BlogPost) (string, error) {
@@ -103,30 +102,6 @@ func (r *mutationResolver) UnpublishBlogPost(ctx context.Context, id string) (*m
 		return nil, fmt.Errorf("database connection not available")
 	}
 	return r.DB.UnpublishBlogPost(id)
-}
-
-// CreateCodeCategory is the resolver for the createCodeCategory field.
-func (r *mutationResolver) CreateCodeCategory(ctx context.Context, input models.CreateCodeCategoryInput) (*models.CodeCategory, error) {
-	if r.DB == nil {
-		return nil, fmt.Errorf("database connection not available")
-	}
-	return r.DB.CreateCodeCategory(input)
-}
-
-// UpdateCodeCategory is the resolver for the updateCodeCategory field.
-func (r *mutationResolver) UpdateCodeCategory(ctx context.Context, id string, input models.UpdateCodeCategoryInput) (*models.CodeCategory, error) {
-	if r.DB == nil {
-		return nil, fmt.Errorf("database connection not available")
-	}
-	return r.DB.UpdateCodeCategory(id, input)
-}
-
-// DeleteCodeCategory is the resolver for the deleteCodeCategory field.
-func (r *mutationResolver) DeleteCodeCategory(ctx context.Context, id string) (bool, error) {
-	if r.DB == nil {
-		return false, fmt.Errorf("database connection not available")
-	}
-	return r.DB.DeleteCodeCategory(id)
 }
 
 // CreateMonologue is the resolver for the createMonologue field.
@@ -237,18 +212,18 @@ func (r *queryResolver) Monologue(ctx context.Context, id string) (*models.Monol
 }
 
 // Monologues is the resolver for the monologues field.
-func (r *queryResolver) Monologues(ctx context.Context, limit *int, offset *int, categoryID *string, tags []string, difficulty *models.Difficulty) (*models.MonologuesResponse, error) {
+func (r *queryResolver) Monologues(ctx context.Context, limit *int, offset *int, tags []string) (*models.MonologuesResponse, error) {
 	if r.DB == nil {
 		return nil, fmt.Errorf("database connection not available")
 	}
 
-	monologues, err := r.DB.GetMonologues(limit, offset, categoryID, tags, difficulty)
+	monologues, err := r.DB.GetMonologues(limit, offset, tags)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get total count for pagination
-	allMonologues, err := r.DB.GetMonologues(nil, nil, categoryID, tags, difficulty)
+	allMonologues, err := r.DB.GetMonologues(nil, nil, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -297,22 +272,6 @@ func (r *queryResolver) AdminMonologues(ctx context.Context) ([]*models.Monologu
 	return r.DB.GetAdminMonologues()
 }
 
-// CodeCategories is the resolver for the codeCategories field.
-func (r *queryResolver) CodeCategories(ctx context.Context) ([]*models.CodeCategory, error) {
-	if r.DB == nil {
-		return nil, fmt.Errorf("database connection not available")
-	}
-	return r.DB.GetCodeCategories()
-}
-
-// CodeCategoriesHierarchy is the resolver for the codeCategoriesHierarchy field.
-func (r *queryResolver) CodeCategoriesHierarchy(ctx context.Context) ([]*models.CodeCategory, error) {
-	if r.DB == nil {
-		return nil, fmt.Errorf("database connection not available")
-	}
-	return r.DB.GetCodeCategories()
-}
-
 // RelatedContent is the resolver for the relatedContent field.
 func (r *queryResolver) RelatedContent(ctx context.Context, monologueID string, limit *int) ([]*models.RelatedContent, error) {
 	if r.DB == nil {
@@ -326,7 +285,7 @@ func (r *queryResolver) RelatedContent(ctx context.Context, monologueID string, 
 	}
 
 	// Get all published monologues and blog posts
-	allMonos, err := r.DB.GetMonologues(nil, nil, nil, nil, nil)
+	allMonos, err := r.DB.GetMonologues(nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -446,43 +405,7 @@ type urlPreviewResolver struct{ *Resolver }
 //    it when you're done.
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
 /*
-	type Resolver struct {
-	DB *database.DB
-}
-func (r *blogPostResolver) LikeCount(ctx context.Context, obj *models.BlogPost) (*int, error) {
-	if r.DB == nil {
-		return intPtr(0), nil
-	}
-	count, err := r.DB.GetBlogPostLikeCount(obj.ID)
-	if err != nil {
-		return intPtr(0), nil
-	}
-	return intPtr(count), nil
-}
-func stringPtr(s string) *string {
-	return &s
-}
-func intPtr(i int) *int {
-	return &i
-}
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-*/
-
-func (r *blogPostResolver) LikeCount(ctx context.Context, obj *models.BlogPost) (*int, error) {
-	if r.DB == nil {
-		return intPtr(0), nil
-	}
-	count, err := r.DB.GetBlogPostLikeCount(obj.ID)
-	if err  !=  nil {
-		return intPtr(0), nil
-	}
-	return intPtr(count), nil
-}
-
+	type Resolver struct{ DB *database.DB }
 func intPtr(i int) *int { return &i }
 func stringPtr(s string) *string { return &s }
+*/

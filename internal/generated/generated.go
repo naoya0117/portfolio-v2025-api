@@ -66,17 +66,6 @@ type ComplexityRoot struct {
 		UpdatedAt      func(childComplexity int) int
 	}
 
-	CodeCategory struct {
-		Children    func(childComplexity int) int
-		Color       func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Icon        func(childComplexity int) int
-		Name        func(childComplexity int) int
-		ParentID    func(childComplexity int) int
-		Slug        func(childComplexity int) int
-	}
-
 	Experience struct {
 		Company      func(childComplexity int) int
 		Description  func(childComplexity int) int
@@ -96,13 +85,11 @@ type ComplexityRoot struct {
 
 	Monologue struct {
 		Category         func(childComplexity int) int
-		CodeCategory     func(childComplexity int) int
 		CodeLanguage     func(childComplexity int) int
 		CodeSnippet      func(childComplexity int) int
 		Content          func(childComplexity int) int
 		ContentType      func(childComplexity int) int
 		CreatedAt        func(childComplexity int) int
-		Difficulty       func(childComplexity int) int
 		ID               func(childComplexity int) int
 		IsPublished      func(childComplexity int) int
 		LikeCount        func(childComplexity int) int
@@ -123,10 +110,8 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateBlogPost     func(childComplexity int, input models.CreateBlogPostInput) int
-		CreateCodeCategory func(childComplexity int, input models.CreateCodeCategoryInput) int
 		CreateMonologue    func(childComplexity int, input models.CreateMonologueInput) int
 		DeleteBlogPost     func(childComplexity int, id string) int
-		DeleteCodeCategory func(childComplexity int, id string) int
 		DeleteMonologue    func(childComplexity int, id string) int
 		GenerateURLPreview func(childComplexity int, url string) int
 		LikeBlogPost       func(childComplexity int, id string) int
@@ -136,7 +121,6 @@ type ComplexityRoot struct {
 		UnpublishBlogPost  func(childComplexity int, id string) int
 		UnpublishMonologue func(childComplexity int, id string) int
 		UpdateBlogPost     func(childComplexity int, id string, input models.UpdateBlogPostInput) int
-		UpdateCodeCategory func(childComplexity int, id string, input models.UpdateCodeCategoryInput) int
 		UpdateMonologue    func(childComplexity int, id string, input models.UpdateMonologueInput) int
 	}
 
@@ -150,19 +134,17 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AdminBlogPosts          func(childComplexity int) int
-		AdminMonologues         func(childComplexity int) int
-		BlogPost                func(childComplexity int, slug string) int
-		BlogPosts               func(childComplexity int) int
-		CodeCategories          func(childComplexity int) int
-		CodeCategoriesHierarchy func(childComplexity int) int
-		Experiences             func(childComplexity int) int
-		Monologue               func(childComplexity int, id string) int
-		Monologues              func(childComplexity int, limit *int, offset *int, categoryID *string, tags []string, difficulty *models.Difficulty) int
-		Profile                 func(childComplexity int) int
-		RelatedContent          func(childComplexity int, monologueID string, limit *int) int
-		Skills                  func(childComplexity int) int
-		SkillsByCategory        func(childComplexity int) int
+		AdminBlogPosts   func(childComplexity int) int
+		AdminMonologues  func(childComplexity int) int
+		BlogPost         func(childComplexity int, slug string) int
+		BlogPosts        func(childComplexity int) int
+		Experiences      func(childComplexity int) int
+		Monologue        func(childComplexity int, id string) int
+		Monologues       func(childComplexity int, limit *int, offset *int, tags []string) int
+		Profile          func(childComplexity int) int
+		RelatedContent   func(childComplexity int, monologueID string, limit *int) int
+		Skills           func(childComplexity int) int
+		SkillsByCategory func(childComplexity int) int
 	}
 
 	RelatedContent struct {
@@ -223,9 +205,6 @@ type MutationResolver interface {
 	DeleteBlogPost(ctx context.Context, id string) (bool, error)
 	PublishBlogPost(ctx context.Context, id string) (*models.BlogPost, error)
 	UnpublishBlogPost(ctx context.Context, id string) (*models.BlogPost, error)
-	CreateCodeCategory(ctx context.Context, input models.CreateCodeCategoryInput) (*models.CodeCategory, error)
-	UpdateCodeCategory(ctx context.Context, id string, input models.UpdateCodeCategoryInput) (*models.CodeCategory, error)
-	DeleteCodeCategory(ctx context.Context, id string) (bool, error)
 	CreateMonologue(ctx context.Context, input models.CreateMonologueInput) (*models.Monologue, error)
 	UpdateMonologue(ctx context.Context, id string, input models.UpdateMonologueInput) (*models.Monologue, error)
 	DeleteMonologue(ctx context.Context, id string) (bool, error)
@@ -238,13 +217,11 @@ type QueryResolver interface {
 	SkillsByCategory(ctx context.Context) ([]*models.SkillCategory, error)
 	Experiences(ctx context.Context) ([]*models.Experience, error)
 	Monologue(ctx context.Context, id string) (*models.Monologue, error)
-	Monologues(ctx context.Context, limit *int, offset *int, categoryID *string, tags []string, difficulty *models.Difficulty) (*models.MonologuesResponse, error)
+	Monologues(ctx context.Context, limit *int, offset *int, tags []string) (*models.MonologuesResponse, error)
 	BlogPost(ctx context.Context, slug string) (*models.BlogPost, error)
 	BlogPosts(ctx context.Context) ([]*models.BlogPost, error)
 	AdminBlogPosts(ctx context.Context) ([]*models.BlogPost, error)
 	AdminMonologues(ctx context.Context) ([]*models.Monologue, error)
-	CodeCategories(ctx context.Context) ([]*models.CodeCategory, error)
-	CodeCategoriesHierarchy(ctx context.Context) ([]*models.CodeCategory, error)
 	RelatedContent(ctx context.Context, monologueID string, limit *int) ([]*models.RelatedContent, error)
 }
 type UrlPreviewResolver interface {
@@ -368,62 +345,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.BlogPost.UpdatedAt(childComplexity), true
 
-	case "CodeCategory.children":
-		if e.complexity.CodeCategory.Children == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Children(childComplexity), true
-
-	case "CodeCategory.color":
-		if e.complexity.CodeCategory.Color == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Color(childComplexity), true
-
-	case "CodeCategory.description":
-		if e.complexity.CodeCategory.Description == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Description(childComplexity), true
-
-	case "CodeCategory.id":
-		if e.complexity.CodeCategory.ID == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.ID(childComplexity), true
-
-	case "CodeCategory.icon":
-		if e.complexity.CodeCategory.Icon == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Icon(childComplexity), true
-
-	case "CodeCategory.name":
-		if e.complexity.CodeCategory.Name == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Name(childComplexity), true
-
-	case "CodeCategory.parentId":
-		if e.complexity.CodeCategory.ParentID == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.ParentID(childComplexity), true
-
-	case "CodeCategory.slug":
-		if e.complexity.CodeCategory.Slug == nil {
-			break
-		}
-
-		return e.complexity.CodeCategory.Slug(childComplexity), true
-
 	case "Experience.company":
 		if e.complexity.Experience.Company == nil {
 			break
@@ -508,13 +429,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Monologue.Category(childComplexity), true
 
-	case "Monologue.codeCategory":
-		if e.complexity.Monologue.CodeCategory == nil {
-			break
-		}
-
-		return e.complexity.Monologue.CodeCategory(childComplexity), true
-
 	case "Monologue.codeLanguage":
 		if e.complexity.Monologue.CodeLanguage == nil {
 			break
@@ -549,13 +463,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Monologue.CreatedAt(childComplexity), true
-
-	case "Monologue.difficulty":
-		if e.complexity.Monologue.Difficulty == nil {
-			break
-		}
-
-		return e.complexity.Monologue.Difficulty(childComplexity), true
 
 	case "Monologue.id":
 		if e.complexity.Monologue.ID == nil {
@@ -660,18 +567,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.CreateBlogPost(childComplexity, args["input"].(models.CreateBlogPostInput)), true
 
-	case "Mutation.createCodeCategory":
-		if e.complexity.Mutation.CreateCodeCategory == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createCodeCategory_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateCodeCategory(childComplexity, args["input"].(models.CreateCodeCategoryInput)), true
-
 	case "Mutation.createMonologue":
 		if e.complexity.Mutation.CreateMonologue == nil {
 			break
@@ -695,18 +590,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.DeleteBlogPost(childComplexity, args["id"].(string)), true
-
-	case "Mutation.deleteCodeCategory":
-		if e.complexity.Mutation.DeleteCodeCategory == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteCodeCategory_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteCodeCategory(childComplexity, args["id"].(string)), true
 
 	case "Mutation.deleteMonologue":
 		if e.complexity.Mutation.DeleteMonologue == nil {
@@ -816,18 +699,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateBlogPost(childComplexity, args["id"].(string), args["input"].(models.UpdateBlogPostInput)), true
 
-	case "Mutation.updateCodeCategory":
-		if e.complexity.Mutation.UpdateCodeCategory == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateCodeCategory_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateCodeCategory(childComplexity, args["id"].(string), args["input"].(models.UpdateCodeCategoryInput)), true
-
 	case "Mutation.updateMonologue":
 		if e.complexity.Mutation.UpdateMonologue == nil {
 			break
@@ -915,20 +786,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.BlogPosts(childComplexity), true
 
-	case "Query.codeCategories":
-		if e.complexity.Query.CodeCategories == nil {
-			break
-		}
-
-		return e.complexity.Query.CodeCategories(childComplexity), true
-
-	case "Query.codeCategoriesHierarchy":
-		if e.complexity.Query.CodeCategoriesHierarchy == nil {
-			break
-		}
-
-		return e.complexity.Query.CodeCategoriesHierarchy(childComplexity), true
-
 	case "Query.experiences":
 		if e.complexity.Query.Experiences == nil {
 			break
@@ -958,7 +815,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Monologues(childComplexity, args["limit"].(*int), args["offset"].(*int), args["categoryId"].(*string), args["tags"].([]string), args["difficulty"].(*models.Difficulty)), true
+		return e.complexity.Query.Monologues(childComplexity, args["limit"].(*int), args["offset"].(*int), args["tags"].([]string)), true
 
 	case "Query.profile":
 		if e.complexity.Query.Profile == nil {
@@ -1177,10 +1034,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateBlogPostInput,
-		ec.unmarshalInputCreateCodeCategoryInput,
 		ec.unmarshalInputCreateMonologueInput,
 		ec.unmarshalInputUpdateBlogPostInput,
-		ec.unmarshalInputUpdateCodeCategoryInput,
 		ec.unmarshalInputUpdateMonologueInput,
 	)
 	first := true
@@ -1295,9 +1150,7 @@ var sources = []*ast.Source{
   monologues(
     limit: Int
     offset: Int
-    categoryId: String
     tags: [String!]
-    difficulty: Difficulty
   ): MonologuesResponse!
   
   # BlogPost queries
@@ -1308,9 +1161,6 @@ var sources = []*ast.Source{
   adminBlogPosts: [BlogPost!]!
   adminMonologues: [Monologue!]!
   
-  # CodeCategory queries
-  codeCategories: [CodeCategory!]!
-  codeCategoriesHierarchy: [CodeCategory!]!
   
   # Related content
   relatedContent(monologueId: ID!, limit: Int = 6): [RelatedContent!]!
@@ -1331,10 +1181,6 @@ type Mutation {
   publishBlogPost(id: ID!): BlogPost!
   unpublishBlogPost(id: ID!): BlogPost!
   
-  # CodeCategory CRUD (admin functions)
-  createCodeCategory(input: CreateCodeCategoryInput!): CodeCategory!
-  updateCodeCategory(id: ID!, input: UpdateCodeCategoryInput!): CodeCategory!
-  deleteCodeCategory(id: ID!): Boolean!
   
   # Monologue CRUD
   createMonologue(input: CreateMonologueInput!): Monologue!
@@ -1406,8 +1252,6 @@ type Monologue {
   relatedBlogPosts: [String!]
   series: String
   category: String
-  codeCategory: CodeCategory
-  difficulty: Difficulty
   likeCount: Int
 }
 
@@ -1427,16 +1271,6 @@ type UrlPreview {
   createdAt: String!
 }
 
-type CodeCategory {
-  id: ID!
-  name: String!
-  slug: String!
-  description: String
-  parentId: String
-  color: String
-  icon: String
-  children: [CodeCategory!]
-}
 
 # BlogPost types
 type BlogPost {
@@ -1483,11 +1317,6 @@ enum ContentType {
   BLOG
 }
 
-enum Difficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
 
 enum BlogStatus {
   DRAFT
@@ -1531,8 +1360,6 @@ input CreateMonologueInput {
   url: String
   series: String
   category: String
-  codeCategoryId: String
-  difficulty: Difficulty
 }
 
 input UpdateMonologueInput {
@@ -1545,28 +1372,9 @@ input UpdateMonologueInput {
   url: String
   series: String
   category: String
-  codeCategoryId: String
-  difficulty: Difficulty
 }
 
-# Input types for CodeCategory
-input CreateCodeCategoryInput {
-  name: String!
-  slug: String!
-  description: String
-  parentId: String
-  color: String
-  icon: String
-}
-
-input UpdateCodeCategoryInput {
-  name: String
-  slug: String
-  description: String
-  parentId: String
-  color: String
-  icon: String
-}`, BuiltIn: false},
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1599,34 +1407,6 @@ func (ec *executionContext) field_Mutation_createBlogPost_argsInput(
 	}
 
 	var zeroVal models.CreateBlogPostInput
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_createCodeCategory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_createCodeCategory_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_createCodeCategory_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (models.CreateCodeCategoryInput, error) {
-	if _, ok := rawArgs["input"]; !ok {
-		var zeroVal models.CreateCodeCategoryInput
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNCreateCodeCategoryInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCreateCodeCategoryInput(ctx, tmp)
-	}
-
-	var zeroVal models.CreateCodeCategoryInput
 	return zeroVal, nil
 }
 
@@ -1669,34 +1449,6 @@ func (ec *executionContext) field_Mutation_deleteBlogPost_args(ctx context.Conte
 	return args, nil
 }
 func (ec *executionContext) field_Mutation_deleteBlogPost_argsID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (string, error) {
-	if _, ok := rawArgs["id"]; !ok {
-		var zeroVal string
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteCodeCategory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_deleteCodeCategory_argsID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_deleteCodeCategory_argsID(
 	ctx context.Context,
 	rawArgs map[string]any,
 ) (string, error) {
@@ -1989,57 +1741,6 @@ func (ec *executionContext) field_Mutation_updateBlogPost_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_updateCodeCategory_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_updateCodeCategory_argsID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	arg1, err := ec.field_Mutation_updateCodeCategory_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg1
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_updateCodeCategory_argsID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (string, error) {
-	if _, ok := rawArgs["id"]; !ok {
-		var zeroVal string
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_updateCodeCategory_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (models.UpdateCodeCategoryInput, error) {
-	if _, ok := rawArgs["input"]; !ok {
-		var zeroVal models.UpdateCodeCategoryInput
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNUpdateCodeCategoryInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐUpdateCodeCategoryInput(ctx, tmp)
-	}
-
-	var zeroVal models.UpdateCodeCategoryInput
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Mutation_updateMonologue_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2188,21 +1889,11 @@ func (ec *executionContext) field_Query_monologues_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["offset"] = arg1
-	arg2, err := ec.field_Query_monologues_argsCategoryID(ctx, rawArgs)
+	arg2, err := ec.field_Query_monologues_argsTags(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["categoryId"] = arg2
-	arg3, err := ec.field_Query_monologues_argsTags(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["tags"] = arg3
-	arg4, err := ec.field_Query_monologues_argsDifficulty(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["difficulty"] = arg4
+	args["tags"] = arg2
 	return args, nil
 }
 func (ec *executionContext) field_Query_monologues_argsLimit(
@@ -2241,24 +1932,6 @@ func (ec *executionContext) field_Query_monologues_argsOffset(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_monologues_argsCategoryID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (*string, error) {
-	if _, ok := rawArgs["categoryId"]; !ok {
-		var zeroVal *string
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryId"))
-	if tmp, ok := rawArgs["categoryId"]; ok {
-		return ec.unmarshalOString2ᚖstring(ctx, tmp)
-	}
-
-	var zeroVal *string
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Query_monologues_argsTags(
 	ctx context.Context,
 	rawArgs map[string]any,
@@ -2274,24 +1947,6 @@ func (ec *executionContext) field_Query_monologues_argsTags(
 	}
 
 	var zeroVal []string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_monologues_argsDifficulty(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (*models.Difficulty, error) {
-	if _, ok := rawArgs["difficulty"]; !ok {
-		var zeroVal *models.Difficulty
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
-	if tmp, ok := rawArgs["difficulty"]; ok {
-		return ec.unmarshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx, tmp)
-	}
-
-	var zeroVal *models.Difficulty
 	return zeroVal, nil
 }
 
@@ -3059,361 +2714,6 @@ func (ec *executionContext) fieldContext_BlogPost_updatedAt(_ context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_id(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_name(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_name(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_slug(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_slug(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Slug, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_slug(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_description(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_parentId(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_parentId(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ParentID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_parentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_color(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_color(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Color, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_color(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_icon(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_icon(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Icon, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_icon(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _CodeCategory_children(ctx context.Context, field graphql.CollectedField, obj *models.CodeCategory) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CodeCategory_children(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Children, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]models.CodeCategory)
-	fc.Result = res
-	return ec.marshalOCodeCategory2ᚕgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategoryᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_CodeCategory_children(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "CodeCategory",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
 		},
 	}
 	return fc, nil
@@ -4549,106 +3849,6 @@ func (ec *executionContext) fieldContext_Monologue_category(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Monologue_codeCategory(ctx context.Context, field graphql.CollectedField, obj *models.Monologue) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Monologue_codeCategory(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CodeCategory, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.CodeCategory)
-	fc.Result = res
-	return ec.marshalOCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Monologue_codeCategory(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Monologue",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Monologue_difficulty(ctx context.Context, field graphql.CollectedField, obj *models.Monologue) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Monologue_difficulty(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Difficulty, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.Difficulty)
-	fc.Result = res
-	return ec.marshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Monologue_difficulty(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Monologue",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Difficulty does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Monologue_likeCount(ctx context.Context, field graphql.CollectedField, obj *models.Monologue) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Monologue_likeCount(ctx, field)
 	if err != nil {
@@ -4759,10 +3959,6 @@ func (ec *executionContext) fieldContext_MonologuesResponse_nodes(_ context.Cont
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -5452,207 +4648,6 @@ func (ec *executionContext) fieldContext_Mutation_unpublishBlogPost(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createCodeCategory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createCodeCategory(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateCodeCategory(rctx, fc.Args["input"].(models.CreateCodeCategoryInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.CodeCategory)
-	fc.Result = res
-	return ec.marshalNCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createCodeCategory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createCodeCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateCodeCategory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateCodeCategory(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateCodeCategory(rctx, fc.Args["id"].(string), fc.Args["input"].(models.UpdateCodeCategoryInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.CodeCategory)
-	fc.Result = res
-	return ec.marshalNCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateCodeCategory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateCodeCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteCodeCategory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteCodeCategory(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteCodeCategory(rctx, fc.Args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteCodeCategory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteCodeCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createMonologue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createMonologue(ctx, field)
 	if err != nil {
@@ -5722,10 +4717,6 @@ func (ec *executionContext) fieldContext_Mutation_createMonologue(ctx context.Co
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -5815,10 +4806,6 @@ func (ec *executionContext) fieldContext_Mutation_updateMonologue(ctx context.Co
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -5963,10 +4950,6 @@ func (ec *executionContext) fieldContext_Mutation_publishMonologue(ctx context.C
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -6056,10 +5039,6 @@ func (ec *executionContext) fieldContext_Mutation_unpublishMonologue(ctx context
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -6634,10 +5613,6 @@ func (ec *executionContext) fieldContext_Query_monologue(ctx context.Context, fi
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
@@ -6672,7 +5647,7 @@ func (ec *executionContext) _Query_monologues(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Monologues(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int), fc.Args["categoryId"].(*string), fc.Args["tags"].([]string), fc.Args["difficulty"].(*models.Difficulty))
+		return ec.resolvers.Query().Monologues(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int), fc.Args["tags"].([]string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7020,138 +5995,10 @@ func (ec *executionContext) fieldContext_Query_adminMonologues(_ context.Context
 				return ec.fieldContext_Monologue_series(ctx, field)
 			case "category":
 				return ec.fieldContext_Monologue_category(ctx, field)
-			case "codeCategory":
-				return ec.fieldContext_Monologue_codeCategory(ctx, field)
-			case "difficulty":
-				return ec.fieldContext_Monologue_difficulty(ctx, field)
 			case "likeCount":
 				return ec.fieldContext_Monologue_likeCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Monologue", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_codeCategories(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_codeCategories(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CodeCategories(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*models.CodeCategory)
-	fc.Result = res
-	return ec.marshalNCodeCategory2ᚕᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategoryᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_codeCategories(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_codeCategoriesHierarchy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_codeCategoriesHierarchy(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CodeCategoriesHierarchy(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*models.CodeCategory)
-	fc.Result = res
-	return ec.marshalNCodeCategory2ᚕᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategoryᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_codeCategoriesHierarchy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_CodeCategory_id(ctx, field)
-			case "name":
-				return ec.fieldContext_CodeCategory_name(ctx, field)
-			case "slug":
-				return ec.fieldContext_CodeCategory_slug(ctx, field)
-			case "description":
-				return ec.fieldContext_CodeCategory_description(ctx, field)
-			case "parentId":
-				return ec.fieldContext_CodeCategory_parentId(ctx, field)
-			case "color":
-				return ec.fieldContext_CodeCategory_color(ctx, field)
-			case "icon":
-				return ec.fieldContext_CodeCategory_icon(ctx, field)
-			case "children":
-				return ec.fieldContext_CodeCategory_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type CodeCategory", field.Name)
 		},
 	}
 	return fc, nil
@@ -10487,68 +9334,6 @@ func (ec *executionContext) unmarshalInputCreateBlogPostInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateCodeCategoryInput(ctx context.Context, obj any) (models.CreateCodeCategoryInput, error) {
-	var it models.CreateCodeCategoryInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"name", "slug", "description", "parentId", "color", "icon"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "slug":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Slug = data
-		case "description":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Description = data
-		case "parentId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "color":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("color"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Color = data
-		case "icon":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Icon = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputCreateMonologueInput(ctx context.Context, obj any) (models.CreateMonologueInput, error) {
 	var it models.CreateMonologueInput
 	asMap := map[string]any{}
@@ -10560,7 +9345,7 @@ func (ec *executionContext) unmarshalInputCreateMonologueInput(ctx context.Conte
 		asMap["isPublished"] = false
 	}
 
-	fieldsInOrder := [...]string{"content", "contentType", "codeLanguage", "codeSnippet", "tags", "isPublished", "url", "series", "category", "codeCategoryId", "difficulty"}
+	fieldsInOrder := [...]string{"content", "contentType", "codeLanguage", "codeSnippet", "tags", "isPublished", "url", "series", "category"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10630,20 +9415,6 @@ func (ec *executionContext) unmarshalInputCreateMonologueInput(ctx context.Conte
 				return it, err
 			}
 			it.Category = data
-		case "codeCategoryId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("codeCategoryId"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CodeCategoryID = data
-		case "difficulty":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
-			data, err := ec.unmarshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Difficulty = data
 		}
 	}
 
@@ -10733,68 +9504,6 @@ func (ec *executionContext) unmarshalInputUpdateBlogPostInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateCodeCategoryInput(ctx context.Context, obj any) (models.UpdateCodeCategoryInput, error) {
-	var it models.UpdateCodeCategoryInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"name", "slug", "description", "parentId", "color", "icon"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "slug":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Slug = data
-		case "description":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Description = data
-		case "parentId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "color":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("color"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Color = data
-		case "icon":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Icon = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputUpdateMonologueInput(ctx context.Context, obj any) (models.UpdateMonologueInput, error) {
 	var it models.UpdateMonologueInput
 	asMap := map[string]any{}
@@ -10802,7 +9511,7 @@ func (ec *executionContext) unmarshalInputUpdateMonologueInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"content", "contentType", "codeLanguage", "codeSnippet", "tags", "isPublished", "url", "series", "category", "codeCategoryId", "difficulty"}
+	fieldsInOrder := [...]string{"content", "contentType", "codeLanguage", "codeSnippet", "tags", "isPublished", "url", "series", "category"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10872,20 +9581,6 @@ func (ec *executionContext) unmarshalInputUpdateMonologueInput(ctx context.Conte
 				return it, err
 			}
 			it.Category = data
-		case "codeCategoryId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("codeCategoryId"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CodeCategoryID = data
-		case "difficulty":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
-			data, err := ec.unmarshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Difficulty = data
 		}
 	}
 
@@ -11025,65 +9720,6 @@ func (ec *executionContext) _BlogPost(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var codeCategoryImplementors = []string{"CodeCategory"}
-
-func (ec *executionContext) _CodeCategory(ctx context.Context, sel ast.SelectionSet, obj *models.CodeCategory) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, codeCategoryImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("CodeCategory")
-		case "id":
-			out.Values[i] = ec._CodeCategory_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "name":
-			out.Values[i] = ec._CodeCategory_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "slug":
-			out.Values[i] = ec._CodeCategory_slug(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "description":
-			out.Values[i] = ec._CodeCategory_description(ctx, field, obj)
-		case "parentId":
-			out.Values[i] = ec._CodeCategory_parentId(ctx, field, obj)
-		case "color":
-			out.Values[i] = ec._CodeCategory_color(ctx, field, obj)
-		case "icon":
-			out.Values[i] = ec._CodeCategory_icon(ctx, field, obj)
-		case "children":
-			out.Values[i] = ec._CodeCategory_children(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11348,10 +9984,6 @@ func (ec *executionContext) _Monologue(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._Monologue_series(ctx, field, obj)
 		case "category":
 			out.Values[i] = ec._Monologue_category(ctx, field, obj)
-		case "codeCategory":
-			out.Values[i] = ec._Monologue_codeCategory(ctx, field, obj)
-		case "difficulty":
-			out.Values[i] = ec._Monologue_difficulty(ctx, field, obj)
 		case "likeCount":
 			out.Values[i] = ec._Monologue_likeCount(ctx, field, obj)
 		default:
@@ -11497,27 +10129,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "unpublishBlogPost":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_unpublishBlogPost(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "createCodeCategory":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createCodeCategory(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "updateCodeCategory":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateCodeCategory(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "deleteCodeCategory":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteCodeCategory(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -11853,50 +10464,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_adminMonologues(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "codeCategories":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_codeCategories(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "codeCategoriesHierarchy":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_codeCategoriesHierarchy(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -12683,64 +11250,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCodeCategory2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx context.Context, sel ast.SelectionSet, v models.CodeCategory) graphql.Marshaler {
-	return ec._CodeCategory(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCodeCategory2ᚕᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.CodeCategory) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx context.Context, sel ast.SelectionSet, v *models.CodeCategory) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._CodeCategory(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNContentType2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐContentType(ctx context.Context, v any) (models.ContentType, error) {
 	var res models.ContentType
 	err := res.UnmarshalGQL(v)
@@ -12753,11 +11262,6 @@ func (ec *executionContext) marshalNContentType2githubᚗcomᚋnaoya0117ᚋportf
 
 func (ec *executionContext) unmarshalNCreateBlogPostInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCreateBlogPostInput(ctx context.Context, v any) (models.CreateBlogPostInput, error) {
 	res, err := ec.unmarshalInputCreateBlogPostInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNCreateCodeCategoryInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCreateCodeCategoryInput(ctx context.Context, v any) (models.CreateCodeCategoryInput, error) {
-	res, err := ec.unmarshalInputCreateCodeCategoryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -13205,11 +11709,6 @@ func (ec *executionContext) unmarshalNUpdateBlogPostInput2githubᚗcomᚋnaoya01
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateCodeCategoryInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐUpdateCodeCategoryInput(ctx context.Context, v any) (models.UpdateCodeCategoryInput, error) {
-	res, err := ec.unmarshalInputUpdateCodeCategoryInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNUpdateMonologueInput2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐUpdateMonologueInput(ctx context.Context, v any) (models.UpdateMonologueInput, error) {
 	res, err := ec.unmarshalInputUpdateMonologueInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13535,60 +12034,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOCodeCategory2ᚕgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []models.CodeCategory) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNCodeCategory2githubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalOCodeCategory2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐCodeCategory(ctx context.Context, sel ast.SelectionSet, v *models.CodeCategory) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CodeCategory(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOContentType2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐContentType(ctx context.Context, v any) (*models.ContentType, error) {
 	if v == nil {
 		return nil, nil
@@ -13599,22 +12044,6 @@ func (ec *executionContext) unmarshalOContentType2ᚖgithubᚗcomᚋnaoya0117ᚋ
 }
 
 func (ec *executionContext) marshalOContentType2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐContentType(ctx context.Context, sel ast.SelectionSet, v *models.ContentType) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
-func (ec *executionContext) unmarshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx context.Context, v any) (*models.Difficulty, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(models.Difficulty)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalODifficulty2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐDifficulty(ctx context.Context, sel ast.SelectionSet, v *models.Difficulty) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

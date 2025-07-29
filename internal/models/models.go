@@ -51,23 +51,9 @@ type Monologue struct {
 	RelatedBlogPosts []string        `json:"relatedBlogPosts"`
 	Series           *string         `json:"series"`
 	Category         *string         `json:"category"`
-	CodeCategory     *CodeCategory   `json:"codeCategory"`
-	Difficulty       *Difficulty     `json:"difficulty"`
 	LikeCount        *int            `json:"likeCount"`
 }
 
-type CodeCategory struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Slug        string         `json:"slug"`
-	Description *string        `json:"description"`
-	ParentID    *string        `json:"parentId"`
-	Color       *string        `json:"color"`
-	Icon        *string        `json:"icon"`
-	Children    []CodeCategory `json:"children"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	UpdatedAt   time.Time      `json:"updatedAt"`
-}
 
 type URLPreview struct {
 	Title       string    `json:"title"`
@@ -90,13 +76,6 @@ const (
 	ContentTypeBlog       ContentType = "BLOG"
 )
 
-type Difficulty string
-
-const (
-	DifficultyBeginner     Difficulty = "BEGINNER"
-	DifficultyIntermediate Difficulty = "INTERMEDIATE"
-	DifficultyAdvanced     Difficulty = "ADVANCED"
-)
 
 type BlogStatus string
 
@@ -163,23 +142,7 @@ type LikeResponse struct {
 	IsLiked   bool   `json:"isLiked"`
 }
 
-type CreateCodeCategoryInput struct {
-	Name        string  `json:"name"`
-	Slug        string  `json:"slug"`
-	Description *string `json:"description"`
-	ParentID    *string `json:"parentId"`
-	Color       *string `json:"color"`
-	Icon        *string `json:"icon"`
-}
 
-type UpdateCodeCategoryInput struct {
-	Name        *string `json:"name"`
-	Slug        *string `json:"slug"`
-	Description *string `json:"description"`
-	ParentID    *string `json:"parentId"`
-	Color       *string `json:"color"`
-	Icon        *string `json:"icon"`
-}
 
 type CreateBlogPostInput struct {
 	Title          string      `json:"title"`
@@ -215,8 +178,6 @@ type CreateMonologueInput struct {
 	URL            *string      `json:"url"`
 	Series         *string      `json:"series"`
 	Category       *string      `json:"category"`
-	CodeCategoryID *string      `json:"codeCategoryId"`
-	Difficulty     *Difficulty  `json:"difficulty"`
 }
 
 type UpdateMonologueInput struct {
@@ -229,8 +190,6 @@ type UpdateMonologueInput struct {
 	URL            *string      `json:"url"`
 	Series         *string      `json:"series"`
 	Category       *string      `json:"category"`
-	CodeCategoryID *string      `json:"codeCategoryId"`
-	Difficulty     *Difficulty  `json:"difficulty"`
 }
 
 // GraphQL Marshaler methods for enums
@@ -248,18 +207,6 @@ func (c *ContentType) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (d Difficulty) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(string(d)))
-}
-
-func (d *Difficulty) UnmarshalGQL(v interface{}) error {
-	s, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("Difficulty must be a string")
-	}
-	*d = Difficulty(s)
-	return nil
-}
 
 func (b BlogStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(string(b)))

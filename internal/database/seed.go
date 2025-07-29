@@ -38,11 +38,6 @@ func (db *DB) SeedData() error {
 		return err
 	}
 
-	// Seed Code Categories
-	categoryIDs, err := db.seedCodeCategories()
-	if err != nil {
-		return err
-	}
 
 	// Seed Blog Posts
 	if err := db.seedBlogPosts(); err != nil {
@@ -50,7 +45,7 @@ func (db *DB) SeedData() error {
 	}
 
 	// Seed Monologues
-	if err := db.seedMonologues(categoryIDs); err != nil {
+	if err := db.seedMonologues(); err != nil {
 		return err
 	}
 
@@ -188,39 +183,6 @@ func (db *DB) seedExperiences() error {
 	return nil
 }
 
-func (db *DB) seedCodeCategories() (map[string]string, error) {
-	categories := []struct {
-		name        string
-		slug        string
-		description string
-		color       string
-		icon        string
-	}{
-		{"React Hooks", "react-hooks", "React Hooksの使い方とパターン", "#61dafb", "⚛️"},
-		{"TypeScript Tips", "typescript-tips", "TypeScript活用のコツとベストプラクティス", "#3178c6", "🔷"},
-		{"パフォーマンス最適化", "performance-optimization", "Webアプリのパフォーマンス改善テクニック", "#ff6b6b", "⚡"},
-		{"API設計", "api-design", "REST APIとGraphQLの設計パターン", "#4ecdc4", "🔌"},
-	}
-
-	categoryIDs := make(map[string]string)
-
-	for _, cat := range categories {
-		var id string
-		err := db.QueryRow(`
-			INSERT INTO code_categories (name, slug, description, color, icon)
-			VALUES ($1, $2, $3, $4, $5)
-			RETURNING id
-		`, cat.name, cat.slug, cat.description, cat.color, cat.icon).Scan(&id)
-
-		if err != nil {
-			return nil, err
-		}
-
-		categoryIDs[cat.slug] = id
-	}
-
-	return categoryIDs, nil
-}
 
 func (db *DB) seedBlogPosts() error {
 	posts := []struct {
@@ -266,7 +228,7 @@ func (db *DB) seedBlogPosts() error {
 	return nil
 }
 
-func (db *DB) seedMonologues(categoryIDs map[string]string) error {
+func (db *DB) seedMonologues() error {
 	monologues := []struct {
 		content         string
 		contentType     string
@@ -277,8 +239,6 @@ func (db *DB) seedMonologues(categoryIDs map[string]string) error {
 		publishedAt     *string
 		url             *string
 		category        string
-		codeCategoryID  *string
-		difficulty      *string
 		likeCount       int
 	}{
 		{
@@ -291,8 +251,6 @@ func (db *DB) seedMonologues(categoryIDs map[string]string) error {
 			seedStringPtr("2025-01-15T10:00:00Z"),
 			nil,
 			"技術メモ",
-			nil,
-			nil,
 			12,
 		},
 		{
@@ -318,8 +276,6 @@ func (db *DB) seedMonologues(categoryIDs map[string]string) error {
 			seedStringPtr("2025-01-10T15:30:00Z"),
 			nil,
 			"",
-			seedStringPtr(categoryIDs["react-hooks"]),
-			seedStringPtr("INTERMEDIATE"),
 			24,
 		},
 		{
@@ -332,8 +288,6 @@ func (db *DB) seedMonologues(categoryIDs map[string]string) error {
 			seedStringPtr("2025-01-12T09:00:00Z"),
 			seedStringPtr("https://github.com/streamich/react-use"),
 			"ツール紹介",
-			nil,
-			nil,
 			8,
 		},
 	}
@@ -342,12 +296,11 @@ func (db *DB) seedMonologues(categoryIDs map[string]string) error {
 		var id string
 		err := db.QueryRow(`
 			INSERT INTO monologues (content, content_type, code_language, code_snippet, tags, is_published, 
-								   published_at, url, category, code_category_id, difficulty, like_count)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+								   published_at, url, category, like_count)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 			RETURNING id
 		`, mono.content, mono.contentType, mono.codeLanguage, mono.codeSnippet, pq.Array(mono.tags),
-			mono.isPublished, mono.publishedAt, mono.url, mono.category, mono.codeCategoryID,
-			mono.difficulty, mono.likeCount).Scan(&id)
+			mono.isPublished, mono.publishedAt, mono.url, mono.category, mono.likeCount).Scan(&id)
 
 		if err != nil {
 			return err

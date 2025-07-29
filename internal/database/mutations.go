@@ -217,8 +217,8 @@ func (db *DB) CreateMonologue(input models.CreateMonologueInput) (*models.Monolo
 
 	query := `
 		INSERT INTO monologues (content, content_type, code_language, code_snippet, tags,
-							   is_published, published_at, url, series, category, code_category_id, difficulty)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+							   is_published, published_at, url, series, category)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -233,22 +233,15 @@ func (db *DB) CreateMonologue(input models.CreateMonologueInput) (*models.Monolo
 		URL:          input.URL,
 		Series:       input.Series,
 		Category:     input.Category,
-		Difficulty:   input.Difficulty,
 		LikeCount:    intPtr(0),
 	}
 
-	var difficultyStr *string
-	if input.Difficulty != nil {
-		str := string(*input.Difficulty)
-		difficultyStr = &str
-	}
 
 	err := db.QueryRow(
 		query, mono.Content, mono.ContentType, ptrToNullString(mono.CodeLanguage),
 		ptrToNullString(mono.CodeSnippet), pq.Array(mono.Tags), mono.IsPublished,
 		ptrToNullString(mono.PublishedAt), ptrToNullString(mono.URL),
 		ptrToNullString(mono.Series), ptrToNullString(mono.Category),
-		ptrToNullString(input.CodeCategoryID), ptrToNullString(difficultyStr),
 	).Scan(&mono.ID, &mono.CreatedAt, &mono.UpdatedAt)
 
 	if err != nil {
@@ -323,17 +316,6 @@ func (db *DB) UpdateMonologue(id string, input models.UpdateMonologueInput) (*mo
 	if input.Category != nil {
 		setParts = append(setParts, fmt.Sprintf("category = $%d", argIndex))
 		args = append(args, ptrToNullString(input.Category))
-		argIndex++
-	}
-	if input.CodeCategoryID != nil {
-		setParts = append(setParts, fmt.Sprintf("code_category_id = $%d", argIndex))
-		args = append(args, ptrToNullString(input.CodeCategoryID))
-		argIndex++
-	}
-	if input.Difficulty != nil {
-		diffStr := string(*input.Difficulty)
-		setParts = append(setParts, fmt.Sprintf("difficulty = $%d", argIndex))
-		args = append(args, diffStr)
 		argIndex++
 	}
 
@@ -464,110 +446,6 @@ func (db *DB) LikeBlogPost(id string) (*models.LikeResponse, error) {
 	}, nil
 }
 
-// Code Category mutations
-func (db *DB) CreateCodeCategory(input models.CreateCodeCategoryInput) (*models.CodeCategory, error) {
-	query := `
-		INSERT INTO code_categories (name, slug, description, parent_id, color, icon)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at, updated_at
-	`
-
-	cat := &models.CodeCategory{
-		Name:        input.Name,
-		Slug:        input.Slug,
-		Description: input.Description,
-		ParentID:    input.ParentID,
-		Color:       input.Color,
-		Icon:        input.Icon,
-	}
-
-	err := db.QueryRow(
-		query, cat.Name, cat.Slug, ptrToNullString(cat.Description),
-		ptrToNullString(cat.ParentID), ptrToNullString(cat.Color),
-		ptrToNullString(cat.Icon),
-	).Scan(&cat.ID, &cat.CreatedAt, &cat.UpdatedAt)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to create code category: %w", err)
-	}
-
-	return cat, nil
-}
-
-func (db *DB) UpdateCodeCategory(id string, input models.UpdateCodeCategoryInput) (*models.CodeCategory, error) {
-	setParts := []string{"updated_at = NOW()"}
-	args := []interface{}{}
-	argIndex := 1
-
-	if input.Name != nil {
-		setParts = append(setParts, fmt.Sprintf("name = $%d", argIndex))
-		args = append(args, *input.Name)
-		argIndex++
-	}
-	if input.Slug != nil {
-		setParts = append(setParts, fmt.Sprintf("slug = $%d", argIndex))
-		args = append(args, *input.Slug)
-		argIndex++
-	}
-	if input.Description != nil {
-		setParts = append(setParts, fmt.Sprintf("description = $%d", argIndex))
-		args = append(args, ptrToNullString(input.Description))
-		argIndex++
-	}
-	if input.ParentID != nil {
-		setParts = append(setParts, fmt.Sprintf("parent_id = $%d", argIndex))
-		args = append(args, ptrToNullString(input.ParentID))
-		argIndex++
-	}
-	if input.Color != nil {
-		setParts = append(setParts, fmt.Sprintf("color = $%d", argIndex))
-		args = append(args, ptrToNullString(input.Color))
-		argIndex++
-	}
-	if input.Icon != nil {
-		setParts = append(setParts, fmt.Sprintf("icon = $%d", argIndex))
-		args = append(args, ptrToNullString(input.Icon))
-		argIndex++
-	}
-
-	query := fmt.Sprintf("UPDATE code_categories SET %s WHERE id = $%d", 
-		joinStrings(setParts, ", "), argIndex)
-	args = append(args, id)
-
-	_, err := db.Exec(query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update code category: %w", err)
-	}
-
-	// Return updated category
-	categories, err := db.GetCodeCategories()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, cat := range categories {
-		if cat.ID == id {
-			return cat, nil
-		}
-	}
-
-	return nil, fmt.Errorf("code category not found after update")
-}
-
-func (db *DB) DeleteCodeCategory(id string) (bool, error) {
-	query := "DELETE FROM code_categories WHERE id = $1"
-	result, err := db.Exec(query, id)
-	if err != nil {
-		return false, fmt.Errorf("failed to delete code category: %w", err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return false, err
-	}
-
-	return rowsAffected > 0, nil
-}
 
 // URL Preview methods
 func (db *DB) CreateURLPreview(monologueID, url string) (*models.URLPreview, error) {

@@ -14,9 +14,7 @@ type Query {
   monologues(
     limit: Int
     offset: Int
-    categoryId: String
     tags: [String!]
-    difficulty: Difficulty
   ): MonologuesResponse!
   
   # BlogPost queries
@@ -27,9 +25,6 @@ type Query {
   adminBlogPosts: [BlogPost!]!
   adminMonologues: [Monologue!]!
   
-  # CodeCategory queries
-  codeCategories: [CodeCategory!]!
-  codeCategoriesHierarchy: [CodeCategory!]!
   
   # Related content
   relatedContent(monologueId: ID!, limit: Int = 6): [RelatedContent!]!
@@ -50,10 +45,6 @@ type Mutation {
   publishBlogPost(id: ID!): BlogPost!
   unpublishBlogPost(id: ID!): BlogPost!
   
-  # CodeCategory CRUD (admin functions)
-  createCodeCategory(input: CreateCodeCategoryInput!): CodeCategory!
-  updateCodeCategory(id: ID!, input: UpdateCodeCategoryInput!): CodeCategory!
-  deleteCodeCategory(id: ID!): Boolean!
   
   # Monologue CRUD
   createMonologue(input: CreateMonologueInput!): Monologue!
@@ -125,8 +116,6 @@ type Monologue {
   relatedBlogPosts: [String!]
   series: String
   category: String
-  codeCategory: CodeCategory
-  difficulty: Difficulty
   likeCount: Int
 }
 
@@ -146,16 +135,6 @@ type UrlPreview {
   createdAt: String!
 }
 
-type CodeCategory {
-  id: ID!
-  name: String!
-  slug: String!
-  description: String
-  parentId: String
-  color: String
-  icon: String
-  children: [CodeCategory!]
-}
 
 # BlogPost types
 type BlogPost {
@@ -202,11 +181,6 @@ enum ContentType {
   BLOG
 }
 
-enum Difficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
 
 enum BlogStatus {
   DRAFT
@@ -250,8 +224,6 @@ input CreateMonologueInput {
   url: String
   series: String
   category: String
-  codeCategoryId: String
-  difficulty: Difficulty
 }
 
 input UpdateMonologueInput {
@@ -264,25 +236,5 @@ input UpdateMonologueInput {
   url: String
   series: String
   category: String
-  codeCategoryId: String
-  difficulty: Difficulty
 }
 
-# Input types for CodeCategory
-input CreateCodeCategoryInput {
-  name: String!
-  slug: String!
-  description: String
-  parentId: String
-  color: String
-  icon: String
-}
-
-input UpdateCodeCategoryInput {
-  name: String
-  slug: String
-  description: String
-  parentId: String
-  color: String
-  icon: String
-}

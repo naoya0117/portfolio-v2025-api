@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/lib/pq"
 	"github.com/naoya0117/portfolio-v2025-api/internal/models"
@@ -248,30 +247,18 @@ func (db *DB) GetBlogPostLikeCount(blogPostID string) (int, error) {
 }
 
 // Monologues methods
-func (db *DB) GetMonologues(limit, offset *int, categoryID *string, tags []string, difficulty *models.Difficulty) ([]*models.Monologue, error) {
+func (db *DB) GetMonologues(limit, offset *int, tags []string) ([]*models.Monologue, error) {
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.difficulty, m.like_count, m.created_at, m.updated_at,
-			   c.id, c.name, c.slug, c.description, c.parent_id, c.color, c.icon
+			   m.like_count, m.created_at, m.updated_at,
 		FROM monologues m
-		LEFT JOIN code_categories c ON m.code_category_id = c.id
 		WHERE m.is_published = true
 	`
 	args := []interface{}{}
 	argIndex := 1
 	
-	if categoryID != nil {
-		query += fmt.Sprintf(" AND m.code_category_id = $%d", argIndex)
-		args = append(args, *categoryID)
-		argIndex++
-	}
 	
-	if difficulty != nil {
-		query += fmt.Sprintf(" AND m.difficulty = $%d", argIndex)
-		args = append(args, string(*difficulty))
-		argIndex++
-	}
 	
 	if len(tags) > 0 {
 		query += fmt.Sprintf(" AND m.tags && $%d", argIndex)
@@ -299,10 +286,8 @@ func (db *DB) GetAdminMonologues() ([]*models.Monologue, error) {
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.difficulty, m.like_count, m.created_at, m.updated_at,
-			   c.id, c.name, c.slug, c.description, c.parent_id, c.color, c.icon
+			   m.like_count, m.created_at, m.updated_at,
 		FROM monologues m
-		LEFT JOIN code_categories c ON m.code_category_id = c.id
 		ORDER BY m.created_at DESC
 	`
 	
@@ -313,10 +298,8 @@ func (db *DB) GetMonologueByID(id string) (*models.Monologue, error) {
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.difficulty, m.like_count, m.created_at, m.updated_at,
-			   c.id, c.name, c.slug, c.description, c.parent_id, c.color, c.icon
+			   m.like_count, m.created_at, m.updated_at,
 		FROM monologues m
-		LEFT JOIN code_categories c ON m.code_category_id = c.id
 		WHERE m.id = $1
 	`
 	
@@ -342,17 +325,14 @@ func (db *DB) queryMonologues(query string, args ...interface{}) ([]*models.Mono
 	var monologues []*models.Monologue
 	for rows.Next() {
 		mono := &models.Monologue{}
-		var codeLanguage, codeSnippet, publishedAt, url, series, category, difficulty sql.NullString
+		var codeLanguage, codeSnippet, publishedAt, url, series, category sql.NullString
 		var likeCount sql.NullInt64
 		
-		// Code category fields
-		var catID, catName, catSlug, catDesc, catParentID, catColor, catIcon sql.NullString
 		
 		err := rows.Scan(
 			&mono.ID, &mono.Content, &mono.ContentType, &codeLanguage, &codeSnippet,
 			pq.Array(&mono.Tags), &mono.IsPublished, &publishedAt, &url, &series, &category,
-			&difficulty, &likeCount, &mono.CreatedAt, &mono.UpdatedAt,
-			&catID, &catName, &catSlug, &catDesc, &catParentID, &catColor, &catIcon,
+			&likeCount, &mono.CreatedAt, &mono.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -365,28 +345,12 @@ func (db *DB) queryMonologues(query string, args ...interface{}) ([]*models.Mono
 		mono.Series = nullStringToPtr(series)
 		mono.Category = nullStringToPtr(category)
 		
-		if difficulty.Valid {
-			d := models.Difficulty(difficulty.String)
-			mono.Difficulty = &d
-		}
 		
 		if likeCount.Valid {
 			count := int(likeCount.Int64)
 			mono.LikeCount = &count
 		}
 		
-		// Set code category if present
-		if catID.Valid {
-			mono.CodeCategory = &models.CodeCategory{
-				ID:          catID.String,
-				Name:        catName.String,
-				Slug:        catSlug.String,
-				Description: nullStringToPtr(catDesc),
-				ParentID:    nullStringToPtr(catParentID),
-				Color:       nullStringToPtr(catColor),
-				Icon:        nullStringToPtr(catIcon),
-			}
-		}
 		
 		// Load URL preview if URL exists
 		if mono.URL != nil {
@@ -400,45 +364,6 @@ func (db *DB) queryMonologues(query string, args ...interface{}) ([]*models.Mono
 	return monologues, nil
 }
 
-// Code Categories methods
-func (db *DB) GetCodeCategories() ([]*models.CodeCategory, error) {
-	query := `
-		SELECT id, name, slug, description, parent_id, color, icon, created_at, updated_at
-		FROM code_categories ORDER BY name
-	`
-	
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	
-	var categories []*models.CodeCategory
-	for rows.Next() {
-		cat := &models.CodeCategory{}
-		var description, parentID, color, icon sql.NullString
-		var createdAt, updatedAt time.Time
-		
-		err := rows.Scan(
-			&cat.ID, &cat.Name, &cat.Slug, &description, &parentID,
-			&color, &icon, &createdAt, &updatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		
-		cat.Description = nullStringToPtr(description)
-		cat.ParentID = nullStringToPtr(parentID)
-		cat.Color = nullStringToPtr(color)
-		cat.Icon = nullStringToPtr(icon)
-		cat.CreatedAt = createdAt
-		cat.UpdatedAt = updatedAt
-		
-		categories = append(categories, cat)
-	}
-	
-	return categories, nil
-}
 
 // URL Preview methods
 func (db *DB) GetURLPreviewByMonologueID(monologueID string) (*models.URLPreview, error) {
