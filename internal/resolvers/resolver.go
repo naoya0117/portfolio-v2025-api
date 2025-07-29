@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/naoya0117/portfolio-v2025-api/internal/database"
 	"github.com/naoya0117/portfolio-v2025-api/internal/generated"
 	"github.com/naoya0117/portfolio-v2025-api/internal/models"
 )
 
-type Resolver struct{}
+type Resolver struct{ DB *database.DB }
 
 // BlogPost field resolvers
 func (r *blogPostResolver) CreatedAt(ctx context.Context, obj *models.BlogPost) (string, error) {
@@ -404,8 +405,5 @@ type urlPreviewResolver struct{ *Resolver }
 //  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //    it when you're done.
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	type Resolver struct{ DB *database.DB }
 func intPtr(i int) *int { return &i }
 func stringPtr(s string) *string { return &s }
-*/

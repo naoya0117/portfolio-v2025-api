@@ -1,4 +1,0 @@
-2025/07/28 00:32:50 Using mock data (no database connection)
-2025/07/28 00:32:50 connect to http://localhost:8080/ for GraphQL playground
-2025/07/28 00:32:50 listen tcp :8080: bind: address already in use
-exit status 1
