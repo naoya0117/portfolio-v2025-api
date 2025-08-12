@@ -249,6 +249,14 @@ func (r *queryResolver) BlogPost(ctx context.Context, slug string) (*models.Blog
 	return r.DB.GetBlogPostBySlug(slug)
 }
 
+// BlogPostByID is the resolver for the blogPostByID field.
+func (r *queryResolver) BlogPostByID(ctx context.Context, id string) (*models.BlogPost, error) {
+	if r.DB == nil {
+		return nil, fmt.Errorf("database connection not available")
+	}
+	return r.DB.GetBlogPostByID(id)
+}
+
 // BlogPosts is the resolver for the blogPosts field.
 func (r *queryResolver) BlogPosts(ctx context.Context) ([]*models.BlogPost, error) {
 	if r.DB == nil {

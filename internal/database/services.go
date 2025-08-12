@@ -186,6 +186,25 @@ func (db *DB) GetBlogPostBySlug(slug string) (*models.BlogPost, error) {
 	return posts[0], nil
 }
 
+func (db *DB) GetBlogPostByID(id string) (*models.BlogPost, error) {
+	query := `
+		SELECT id, title, slug, excerpt, content, cover_image_url, tags,
+			   status, seo_title, seo_description, published_at, like_count, created_at, updated_at
+		FROM blog_posts WHERE id = $1
+	`
+	
+	posts, err := db.queryBlogPosts(query, id)
+	if err != nil {
+		return nil, err
+	}
+	
+	if len(posts) == 0 {
+		return nil, nil
+	}
+	
+	return posts[0], nil
+}
+
 func (db *DB) queryBlogPosts(query string, args ...interface{}) ([]*models.BlogPost, error) {
 	rows, err := db.Query(query, args...)
 	if err != nil {
@@ -251,7 +270,7 @@ func (db *DB) GetMonologues(limit, offset *int, tags []string) ([]*models.Monolo
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.like_count, m.created_at, m.updated_at,
+			   m.like_count, m.created_at, m.updated_at
 		FROM monologues m
 		WHERE m.is_published = true
 	`
@@ -286,7 +305,7 @@ func (db *DB) GetAdminMonologues() ([]*models.Monologue, error) {
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.like_count, m.created_at, m.updated_at,
+			   m.like_count, m.created_at, m.updated_at
 		FROM monologues m
 		ORDER BY m.created_at DESC
 	`
@@ -298,7 +317,7 @@ func (db *DB) GetMonologueByID(id string) (*models.Monologue, error) {
 	query := `
 		SELECT m.id, m.content, m.content_type, m.code_language, m.code_snippet,
 			   m.tags, m.is_published, m.published_at, m.url, m.series, m.category,
-			   m.like_count, m.created_at, m.updated_at,
+			   m.like_count, m.created_at, m.updated_at
 		FROM monologues m
 		WHERE m.id = $1
 	`

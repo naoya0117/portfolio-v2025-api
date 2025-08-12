@@ -137,6 +137,7 @@ type ComplexityRoot struct {
 		AdminBlogPosts   func(childComplexity int) int
 		AdminMonologues  func(childComplexity int) int
 		BlogPost         func(childComplexity int, slug string) int
+		BlogPostByID     func(childComplexity int, id string) int
 		BlogPosts        func(childComplexity int) int
 		Experiences      func(childComplexity int) int
 		Monologue        func(childComplexity int, id string) int
@@ -219,6 +220,7 @@ type QueryResolver interface {
 	Monologue(ctx context.Context, id string) (*models.Monologue, error)
 	Monologues(ctx context.Context, limit *int, offset *int, tags []string) (*models.MonologuesResponse, error)
 	BlogPost(ctx context.Context, slug string) (*models.BlogPost, error)
+	BlogPostByID(ctx context.Context, id string) (*models.BlogPost, error)
 	BlogPosts(ctx context.Context) ([]*models.BlogPost, error)
 	AdminBlogPosts(ctx context.Context) ([]*models.BlogPost, error)
 	AdminMonologues(ctx context.Context) ([]*models.Monologue, error)
@@ -779,6 +781,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.BlogPost(childComplexity, args["slug"].(string)), true
 
+	case "Query.blogPostByID":
+		if e.complexity.Query.BlogPostByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_blogPostByID_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BlogPostByID(childComplexity, args["id"].(string)), true
+
 	case "Query.blogPosts":
 		if e.complexity.Query.BlogPosts == nil {
 			break
@@ -1155,6 +1169,7 @@ var sources = []*ast.Source{
   
   # BlogPost queries
   blogPost(slug: String!): BlogPost
+  blogPostByID(id: ID!): BlogPost
   blogPosts: [BlogPost!]!
   
   # Admin queries (requires authentication)
@@ -1842,6 +1857,34 @@ func (ec *executionContext) field_Query_blogPost_argsSlug(
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
 	if tmp, ok := rawArgs["slug"]; ok {
 		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_blogPostByID_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_blogPostByID_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_blogPostByID_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["id"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
 	var zeroVal string
@@ -5772,6 +5815,88 @@ func (ec *executionContext) fieldContext_Query_blogPost(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_blogPost_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_blogPostByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_blogPostByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BlogPostByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.BlogPost)
+	fc.Result = res
+	return ec.marshalOBlogPost2ᚖgithubᚗcomᚋnaoya0117ᚋportfolioᚑv2025ᚑapiᚋinternalᚋmodelsᚐBlogPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_blogPostByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BlogPost_id(ctx, field)
+			case "title":
+				return ec.fieldContext_BlogPost_title(ctx, field)
+			case "slug":
+				return ec.fieldContext_BlogPost_slug(ctx, field)
+			case "excerpt":
+				return ec.fieldContext_BlogPost_excerpt(ctx, field)
+			case "content":
+				return ec.fieldContext_BlogPost_content(ctx, field)
+			case "coverImageUrl":
+				return ec.fieldContext_BlogPost_coverImageUrl(ctx, field)
+			case "tags":
+				return ec.fieldContext_BlogPost_tags(ctx, field)
+			case "status":
+				return ec.fieldContext_BlogPost_status(ctx, field)
+			case "seoTitle":
+				return ec.fieldContext_BlogPost_seoTitle(ctx, field)
+			case "seoDescription":
+				return ec.fieldContext_BlogPost_seoDescription(ctx, field)
+			case "publishedAt":
+				return ec.fieldContext_BlogPost_publishedAt(ctx, field)
+			case "likeCount":
+				return ec.fieldContext_BlogPost_likeCount(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_BlogPost_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_BlogPost_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BlogPost", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_blogPostByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -10401,6 +10526,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_blogPost(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "blogPostByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_blogPostByID(ctx, field)
 				return res
 			}
 

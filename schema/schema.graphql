@@ -19,6 +19,7 @@ type Query {
   
   # BlogPost queries
   blogPost(slug: String!): BlogPost
+  blogPostByID(id: ID!): BlogPost
   blogPosts: [BlogPost!]!
   
   # Admin queries (requires authentication)
