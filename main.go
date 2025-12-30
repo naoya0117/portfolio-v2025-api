@@ -124,7 +124,8 @@ func main() {
 
 			origin = strings.TrimSpace(origin)
 			if origin == "" {
-				return false
+				// Allow server-to-server requests without an Origin header.
+				return true
 			}
 
 			for _, allowedOrigin := range allowedOrigins {
