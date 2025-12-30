@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -101,8 +102,55 @@ func main() {
 		}
 	}
 
+	// Allow matching by hostname suffix for multi-domain setups (e.g. example.com, *.example.com)
+	allowedOriginSuffixes := []string{}
+	if suffixes := os.Getenv("CORS_ALLOWED_ORIGIN_SUFFIXES"); suffixes != "" {
+		for _, suffix := range strings.Split(suffixes, ",") {
+			trimmed := strings.TrimSpace(suffix)
+			if trimmed != "" {
+				allowedOriginSuffixes = append(allowedOriginSuffixes, trimmed)
+			}
+		}
+	}
+
+	allowAllOrigins := os.Getenv("CORS_ALLOW_ALL") == "true" || os.Getenv("CORS_ALLOWED_ORIGINS") == "*"
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			if allowAllOrigins {
+				return true
+			}
+
+			origin = strings.TrimSpace(origin)
+			if origin == "" {
+				return false
+			}
+
+			for _, allowedOrigin := range allowedOrigins {
+				if origin == allowedOrigin {
+					return true
+				}
+			}
+
+			parsed, err := url.Parse(origin)
+			if err != nil {
+				return false
+			}
+
+			host := parsed.Hostname()
+			if host == "" {
+				return false
+			}
+
+			for _, suffix := range allowedOriginSuffixes {
+				if strings.HasSuffix(host, suffix) {
+					return true
+				}
+			}
+
+			return false
+		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
